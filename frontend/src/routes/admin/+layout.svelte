@@ -35,6 +35,16 @@
 				Categories
 			</a>
 
+			<div class="pt-6 pb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+				Sales
+			</div>
+			<a
+				href="/admin/orders"
+				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
+			>
+				Orders
+			</a>
+
 			<div class="pt-8 border-t border-gray-100 mt-4">
 				<a
 					href="/"

@@ -82,35 +82,40 @@
 			<ul role="list" class="divide-y divide-gray-200">
 				{#each orders as order}
 					<li>
-						<div class="px-4 py-4 sm:px-6">
-							<div class="flex items-center justify-between">
-								<p class="text-sm font-medium text-indigo-600 truncate">
-									Order #{order.id}
-								</p>
-								<div class="ml-2 flex-shrink-0 flex">
-									<p
-										class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+						<a
+							href="/orders/{order.id}"
+							class="block hover:bg-gray-50 transition duration-150 ease-in-out"
+						>
+							<div class="px-4 py-4 sm:px-6">
+								<div class="flex items-center justify-between">
+									<p class="text-sm font-medium text-indigo-600 truncate">
+										Order #{order.id}
+									</p>
+									<div class="ml-2 flex-shrink-0 flex">
+										<p
+											class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                     {order.status === 'completed'
-											? 'bg-green-100 text-green-800'
-											: order.status === 'pending'
-												? 'bg-yellow-100 text-yellow-800'
-												: 'bg-gray-100 text-gray-800'}"
-									>
-										{order.status}
-									</p>
+												? 'bg-green-100 text-green-800'
+												: order.status === 'pending'
+													? 'bg-yellow-100 text-yellow-800'
+													: 'bg-gray-100 text-gray-800'}"
+										>
+											{order.status}
+										</p>
+									</div>
+								</div>
+								<div class="mt-2 sm:flex sm:justify-between">
+									<div class="sm:flex">
+										<p class="flex items-center text-sm text-gray-500">
+											Placed on {formatDate(order.created_at)}
+										</p>
+									</div>
+									<div class="mt-2 flex items-center text-sm text-gray-900 font-bold sm:mt-0">
+										${order.total_price}
+									</div>
 								</div>
 							</div>
-							<div class="mt-2 sm:flex sm:justify-between">
-								<div class="sm:flex">
-									<p class="flex items-center text-sm text-gray-500">
-										Placed on {formatDate(order.created_at)}
-									</p>
-								</div>
-								<div class="mt-2 flex items-center text-sm text-gray-900 font-bold sm:mt-0">
-									${order.total_price}
-								</div>
-							</div>
-						</div>
+						</a>
 					</li>
 				{/each}
 			</ul>

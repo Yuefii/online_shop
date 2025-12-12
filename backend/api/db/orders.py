@@ -67,3 +67,24 @@ def get_order_items(db_conn, order_id: int):
     """
     cursor.execute(query, (order_id,))
     return cursor.fetchall()
+
+def get_all_orders(db_conn):
+    db, cursor = db_conn
+    cursor.execute("SELECT * FROM orders ORDER BY created_at DESC")
+    orders = cursor.fetchall()
+    # Populate items? For admin listing usually summary is enough, but user might expand. 
+    # Let's keep it consistent.
+    result = []
+    for order in orders:
+        order['items'] = get_order_items(db_conn, order['id'])
+        result.append(order)
+    return result
+
+def update_order_status(db_conn, order_id: int, status: str):
+    db, cursor = db_conn
+    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
+    db.commit()
+    if cursor.rowcount == 0:
+        return None
+    return get_order_by_id(db_conn, order_id)
+
