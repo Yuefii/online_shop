@@ -30,6 +30,11 @@
 							class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 							>Home</a
 						>
+						<a
+							href="/admin"
+							class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+							>Admin</a
+						>
 
 						{#if $auth.isAuthenticated}
 							<a
@@ -99,6 +104,11 @@
 						href="/"
 						class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
 						>Home</a
+					>
+					<a
+						href="/admin"
+						class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
+						>Admin</a
 					>
 					{#if $auth.isAuthenticated}
 						<a
