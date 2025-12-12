@@ -11,9 +11,16 @@ router = APIRouter()
 def list_categories(request: Request, db=Depends(get_db)):
     return get_all_categories(db)
 
+from api.dependencies import get_current_admin_user
+
 @router.post("/", response_model=CategoryResponse)
 @limiter.limit("20/minute")
-def create_new_category(category: CategoryCreate, request: Request, db=Depends(get_db)):
+def create_new_category(
+    category: CategoryCreate, 
+    request: Request, 
+    admin: dict = Depends(get_current_admin_user),
+    db=Depends(get_db)
+):
     category_id = create_category(db, category.name, category.slug)
     return get_category_by_id(db, category_id)
 

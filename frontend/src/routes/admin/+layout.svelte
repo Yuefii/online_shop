@@ -1,6 +1,34 @@
 <script lang="ts">
   import '../layout.css';
+  import { auth } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
+  
   let { children } = $props();
+
+  onMount(() => {
+	const unsubscribe = auth.subscribe(state => {
+		if (state.loading) return;
+
+        if (!state.isAuthenticated) {
+            goto('/');
+            return;
+        }
+
+        // Fix Race Condition: If authenticated but user is null (Root layout hasn't fetched yet),
+        // we must trigger fetch or wait. 
+        if (!state.user) {
+            // Trigger fetch if not already loading (which we checked above)
+            auth.fetchProfile();
+            return; // Wait for next update
+        }
+
+        if (state.user.role !== 'admin') {
+			goto('/');
+		}
+	});
+	return unsubscribe;
+  });
 </script>
 
 <div class="min-h-screen bg-gray-100 flex font-sans text-gray-800">
@@ -43,6 +71,16 @@
 				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
 			>
 				Orders
+			</a>
+
+			<div class="pt-6 pb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+				System
+			</div>
+			<a
+				href="/admin/users"
+				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
+			>
+				Users
 			</a>
 
 			<div class="pt-8 border-t border-gray-100 mt-4">

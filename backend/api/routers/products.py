@@ -18,9 +18,16 @@ def list_products(
 ):
     return get_all_products(db, search_query=q, min_price=min_price, max_price=max_price, category_id=category_id)
 
+from api.dependencies import get_current_admin_user
+
 @router.post("/", response_model=ProductResponse)
 @limiter.limit("20/minute")
-def create_new_product(product: ProductCreate, request: Request, db=Depends(get_db)):
+def create_new_product(
+    product: ProductCreate, 
+    request: Request, 
+    admin: dict = Depends(get_current_admin_user),
+    db=Depends(get_db)
+):
     product_id = create_product(
         db, 
         name=product.name, 
