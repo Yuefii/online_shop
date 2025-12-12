@@ -1,0 +1,35 @@
+from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import List
+from api.schemas.product import ProductCreate, ProductResponse
+from api.db.products import get_all_products, get_product_by_id, create_product
+from api.db.conn import get_db
+from api.core.limiter import limiter
+
+router = APIRouter()
+
+@router.get("/", response_model=List[ProductResponse])
+@limiter.limit("5/minute")
+def list_products(request: Request, db=Depends(get_db)):
+    return get_all_products(db)
+
+@router.post("/", response_model=ProductResponse)
+@limiter.limit("5/minute")
+def create_new_product(product: ProductCreate, request: Request, db=Depends(get_db)):
+    product_id = create_product(
+        db, 
+        name=product.name, 
+        price=product.price, 
+        category_id=product.category_id,
+        description=product.description,
+        image_url=product.image_url,
+        stock=product.stock
+    )
+    return get_product_by_id(db, product_id)
+
+@router.get("/{product_id}", response_model=ProductResponse)
+@limiter.limit("5/minute")
+def get_product(product_id: int, request: Request, db=Depends(get_db)):
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
