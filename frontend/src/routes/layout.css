@@ -1,1 +1,51 @@
 @import 'tailwindcss';
+
+:root {
+	--bg-primary: #ffffff;
+	--bg-secondary: #f9fafb;
+	--text-primary: #111827;
+	--text-secondary: #4b5563;
+	--accent-primary: #18181b;
+	--accent-secondary: #3f3f46;
+    --border-color: #e5e7eb;
+}
+
+body {
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+}
+
+@layer utilities {
+    .glass-panel {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    
+    .btn-primary {
+        background-color: var(--accent-primary);
+        color: white;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .input-field {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
+    }
+}
