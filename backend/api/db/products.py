@@ -1,6 +1,26 @@
-def get_all_products(db_conn):
+def get_all_products(db_conn, search_query: str = None, min_price: float = None, max_price: float = None, category_id: int = None):
     db, cursor = db_conn
-    cursor.execute("SELECT * FROM products")
+    
+    query = "SELECT * FROM products WHERE 1=1"
+    params = []
+    
+    if search_query:
+        query += " AND (name LIKE %s OR description LIKE %s)"
+        params.extend([f"%{search_query}%", f"%{search_query}%"])
+        
+    if min_price is not None:
+        query += " AND price >= %s"
+        params.append(min_price)
+        
+    if max_price is not None:
+        query += " AND price <= %s"
+        params.append(max_price)
+        
+    if category_id is not None:
+        query += " AND category_id = %s"
+        params.append(category_id)
+        
+    cursor.execute(query, tuple(params))
     return cursor.fetchall()
 
 

@@ -8,18 +8,16 @@ from api.core.limiter import limiter
 router = APIRouter()
 
 @router.get("/", response_model=List[CategoryResponse])
-@limiter.limit("5/minute")
 def list_categories(request: Request, db=Depends(get_db)):
     return get_all_categories(db)
 
 @router.post("/", response_model=CategoryResponse)
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def create_new_category(category: CategoryCreate, request: Request, db=Depends(get_db)):
     category_id = create_category(db, category.name, category.slug)
     return get_category_by_id(db, category_id)
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-@limiter.limit("5/minute")
 def get_category(category_id: int, request: Request, db=Depends(get_db)):
     category = get_category_by_id(db, category_id)
     if not category:

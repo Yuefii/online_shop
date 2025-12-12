@@ -8,12 +8,18 @@ from api.core.limiter import limiter
 router = APIRouter()
 
 @router.get("/", response_model=List[ProductResponse])
-@limiter.limit("5/minute")
-def list_products(request: Request, db=Depends(get_db)):
-    return get_all_products(db)
+def list_products(
+    request: Request, 
+    db=Depends(get_db),
+    q: str = None,
+    min_price: float = None,
+    max_price: float = None,
+    category_id: int = None
+):
+    return get_all_products(db, search_query=q, min_price=min_price, max_price=max_price, category_id=category_id)
 
 @router.post("/", response_model=ProductResponse)
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def create_new_product(product: ProductCreate, request: Request, db=Depends(get_db)):
     product_id = create_product(
         db, 
@@ -27,9 +33,9 @@ def create_new_product(product: ProductCreate, request: Request, db=Depends(get_
     return get_product_by_id(db, product_id)
 
 @router.get("/{product_id}", response_model=ProductResponse)
-@limiter.limit("5/minute")
 def get_product(product_id: int, request: Request, db=Depends(get_db)):
     product = get_product_by_id(db, product_id)
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
