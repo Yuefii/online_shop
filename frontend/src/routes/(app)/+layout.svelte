@@ -1,19 +1,34 @@
 <script lang="ts">
 	import { auth } from '$lib/stores/auth';
+    import { cart } from '$lib/stores/cart';
     import { page } from '$app/stores';
+    import { onMount } from 'svelte';
+    import CartDrawer from '$lib/components/CartDrawer.svelte';
 
 	let { children } = $props();
 
     $effect(() => {
         const _ = $page.url.pathname;
         mobileMenuOpen = false;
+        cartDrawerOpen = false;
     });
 
     let mobileMenuOpen = $state(false);
+    let cartDrawerOpen = $state(false);
 
     function toggleMobileMenu() {
         mobileMenuOpen = !mobileMenuOpen;
     }
+    
+    function toggleCartDrawer() {
+        cartDrawerOpen = !cartDrawerOpen;
+    }
+    
+    onMount(() => {
+        if ($auth.isAuthenticated) {
+            cart.fetchCart();
+        }
+    });
 </script>
 
 <div class="min-h-screen flex flex-col bg-gray-50">
@@ -24,24 +39,53 @@
 					<a href="/" class="text-xl font-bold text-gray-900 tracking-tight"> OnlineShop </a>
 				</div>
 				<div class="hidden md:block">
-					<div class="ml-10 flex items-baseline space-x-4">
+					<div class="ml-10 flex items-center space-x-4">
 						<a
 							href="/"
 							class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 							>Home</a
 						>
-						<a
-							href="/admin"
-							class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-							>Admin</a
-						>
 
 						{#if $auth.isAuthenticated}
+							<a
+								href="/orders"
+								class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+								>Orders</a
+							>
+
 							<a
 								href="/profile"
 								class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
 								>Profile</a
 							>
+
+							<!-- Cart Button -->
+							<button
+								class="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+								onclick={toggleCartDrawer}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="w-6 h-6"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+									/>
+								</svg>
+								{#if $cart && $cart.items.length > 0}
+									<span
+										class="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full"
+										>{$cart.items.length}</span
+									>
+								{/if}
+							</button>
+
 							<button
 								onclick={() => auth.logout()}
 								class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
@@ -62,6 +106,34 @@
 					</div>
 				</div>
 				<div class="-mr-2 flex md:hidden">
+					{#if $auth.isAuthenticated}
+						<button
+							class="relative text-gray-600 hover:text-gray-900 p-2 mr-2"
+							onclick={toggleCartDrawer}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-6 h-6"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+								/>
+							</svg>
+							{#if $cart && $cart.items.length > 0}
+								<span
+									class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full"
+									>{$cart.items.length}</span
+								>
+							{/if}
+						</button>
+					{/if}
+
 					<button
 						onclick={toggleMobileMenu}
 						type="button"
@@ -105,12 +177,13 @@
 						class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
 						>Home</a
 					>
-					<a
-						href="/admin"
-						class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
-						>Admin</a
-					>
+
 					{#if $auth.isAuthenticated}
+						<a
+							href="/orders"
+							class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
+							>Orders</a
+						>
 						<a
 							href="/profile"
 							class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
@@ -138,7 +211,9 @@
 		{/if}
 	</nav>
 
-	<main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+	<main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
 		{@render children()}
 	</main>
+
+	<CartDrawer bind:isOpen={cartDrawerOpen} />
 </div>

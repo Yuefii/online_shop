@@ -2,13 +2,23 @@
   import { onMount } from 'svelte';
   import { getProducts, type Product } from '$lib/services/products';
   import { getCategories, type Category } from '$lib/services/categories';
+  import { cart } from '$lib/stores/cart';
+  import { slide } from 'svelte/transition';
 
   let products: Product[] = [];
   let categories: Category[] = [];
   let loading = true;
   let error = '';
+  
+  // Filter States
   let selectedCategoryId: number | null = null;
+  let searchQuery = '';
+  let minPrice = '';
+  let maxPrice = '';
+  let searchTimeout: any;
+  let showFilters = false;
 
+  // Load initial data
   onMount(async () => {
     try {
       const [productsData, categoriesData] = await Promise.all([
@@ -24,9 +34,43 @@
     }
   });
 
-  $: filteredProducts = selectedCategoryId
-    ? products.filter(p => p.category_id === selectedCategoryId)
-    : products;
+  // Reactive Fetching
+  async function fetchFilteredProducts() {
+      loading = true;
+      try {
+          products = await getProducts({
+              q: searchQuery,
+              category_id: selectedCategoryId || undefined,
+              min_price: minPrice ? Number(minPrice) : undefined,
+              max_price: maxPrice ? Number(maxPrice) : undefined
+          });
+      } catch(e: any) {
+          error = e.message;
+      } finally {
+          loading = false;
+      }
+  }
+  
+  // Debounced Search
+  function handleSearchInput() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(fetchFilteredProducts, 500);
+  }
+
+  
+  // Let's use a explicit refetch function called by UI events for clarity and consistency
+  function applyFilters() {
+      fetchFilteredProducts();
+  }
+  
+  function selectCategory(id: number | null) {
+      selectedCategoryId = id;
+      applyFilters();
+  }
+
+  function addToCart(product: Product) {
+      cart.addToCart(product);
+  }
 </script>
 
 <div class="space-y-8">
@@ -37,10 +81,121 @@
 		</p>
 	</div>
 
+	<!-- Minimalist Search and Filter Section -->
+	<div class="max-w-4xl mx-auto space-y-8">
+		<!-- Search Bar -->
+		<div class="relative group">
+			<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+				<svg
+					class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors"
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</div>
+			<input
+				type="text"
+				placeholder="Search for products..."
+				class="block w-full pl-11 pr-20 py-4 bg-white border-0 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-100 transition-shadow text-lg"
+				bind:value={searchQuery}
+				on:input={handleSearchInput}
+			/>
+
+			<!-- Price Filter Toggle (integrated inside search bar) -->
+			<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+				<button
+					class="p-2 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-gray-50 transition-all font-medium text-sm flex items-center gap-2"
+					on:click={() => (showFilters = !showFilters)}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+					<span class="hidden sm:inline">Filters</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Expandable Filters -->
+		{#if showFilters}
+			<div
+				transition:slide={{ duration: 200, axis: 'y' }}
+				class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-center animate-in fade-in slide-in-from-top-2"
+			>
+				<span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Price Range</span>
+				<div class="flex items-center gap-4">
+					<div class="relative">
+						<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">$</span>
+						<input
+							type="number"
+							placeholder="Min"
+							class="pl-7 pr-4 py-2 w-32 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+							bind:value={minPrice}
+							on:change={applyFilters}
+						/>
+					</div>
+					<span class="text-gray-300">—</span>
+					<div class="relative">
+						<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">$</span>
+						<input
+							type="number"
+							placeholder="Max"
+							class="pl-7 pr-4 py-2 w-32 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+							bind:value={maxPrice}
+							on:change={applyFilters}
+						/>
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Category Pills (Horizontal Scroll) -->
+		<div class="flex justify-center">
+			<div
+				class="inline-flex rounded-xl bg-white p-1 shadow-sm border border-gray-100 overflow-x-auto max-w-full"
+			>
+				<button
+					class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap {selectedCategoryId ===
+					null
+						? 'bg-gray-900 text-white shadow-md'
+						: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}"
+					on:click={() => selectCategory(null)}
+				>
+					All Items
+				</button>
+				{#each categories as category}
+					<button
+						class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap {selectedCategoryId ===
+						category.id
+							? 'bg-gray-900 text-white shadow-md'
+							: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}"
+						on:click={() => selectCategory(category.id)}
+					>
+						{category.name}
+					</button>
+				{/each}
+			</div>
+		</div>
+	</div>
+
 	{#if loading}
 		<div class="flex justify-center py-10">
 			<div
-				class="animate-spin h-8 w-8 text-gray-900 rounded-full border-2 border-t-transparent border-gray-900"
+				class="animate-spin h-8 w-8 text-gray-900 rounded-full border-2 border-t-transparent border-gray-100"
 			></div>
 		</div>
 	{:else if error}
@@ -52,34 +207,10 @@
 			<span class="block sm:inline">{error}</span>
 		</div>
 	{:else}
-		<!-- Category Filter -->
-		<div class="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
-			<button
-				class="px-4 py-2 rounded-full text-sm font-medium transition-colors border {selectedCategoryId ===
-				null
-					? 'bg-gray-900 text-white border-gray-900'
-					: 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}"
-				on:click={() => (selectedCategoryId = null)}
-			>
-				All
-			</button>
-			{#each categories as category}
-				<button
-					class="px-4 py-2 rounded-full text-sm font-medium transition-colors border {selectedCategoryId ===
-					category.id
-						? 'bg-gray-900 text-white border-gray-900'
-						: 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}"
-					on:click={() => (selectedCategoryId = category.id)}
-				>
-					{category.name}
-				</button>
-			{/each}
-		</div>
-
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-			{#each filteredProducts as product (product.id)}
+			{#each products as product (product.id)}
 				<div
-					class="glass-panel rounded-lg p-6 hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer hover:-translate-y-1"
+					class="glass-panel rounded-lg p-6 hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer hover:-translate-y-1 bg-white border border-gray-100"
 				>
 					<div class="flex justify-between items-start mb-4">
 						<h2
@@ -116,7 +247,8 @@
 					>
 						<span class="text-gray-900 font-bold text-xl">${product.price}</span>
 						<button
-							class="btn-primary px-4 py-2 rounded-md text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+							class="btn-primary px-4 py-2 rounded-md text-sm font-medium bg-black text-white hover:bg-gray-800 transition-colors"
+							on:click={() => addToCart(product)}
 						>
 							Add to Cart
 						</button>
@@ -124,9 +256,9 @@
 				</div>
 			{/each}
 		</div>
-		{#if filteredProducts.length === 0}
+		{#if products.length === 0}
 			<div class="text-center py-16">
-				<p class="text-gray-500 text-lg">No products found in this category.</p>
+				<p class="text-gray-500 text-lg">No products found matching your criteria.</p>
 			</div>
 		{/if}
 	{/if}
