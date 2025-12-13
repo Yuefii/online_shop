@@ -1,4 +1,4 @@
-def get_all_products(db_conn, search_query: str = None, min_price: float = None, max_price: float = None, category_id: int = None):
+def get_all_products(db_conn, search_query: str = None, min_price: float = None, max_price: float = None, category_id: int = None, limit: int = None, offset: int = None):
     db, cursor = db_conn
     
     query = """
@@ -25,8 +25,42 @@ def get_all_products(db_conn, search_query: str = None, min_price: float = None,
         query += " AND p.category_id = %s"
         params.append(category_id)
         
+    if limit is not None:
+        query += " LIMIT %s"
+        params.append(limit)
+        
+    if offset is not None:
+        query += " OFFSET %s"
+        params.append(offset)
+        
     cursor.execute(query, tuple(params))
     return cursor.fetchall()
+
+
+def count_products(db_conn, search_query: str = None, min_price: float = None, max_price: float = None, category_id: int = None):
+    db, cursor = db_conn
+    
+    query = "SELECT COUNT(*) FROM products WHERE 1=1"
+    params = []
+    
+    if search_query:
+        query += " AND (name LIKE %s OR description LIKE %s)"
+        params.extend([f"%{search_query}%", f"%{search_query}%"])
+        
+    if min_price is not None:
+        query += " AND price >= %s"
+        params.append(min_price)
+        
+    if max_price is not None:
+        query += " AND price <= %s"
+        params.append(max_price)
+        
+    if category_id is not None:
+        query += " AND category_id = %s"
+        params.append(category_id)
+        
+    cursor.execute(query, tuple(params))
+    return cursor.fetchone()['COUNT(*)']
 
 
 def get_product_by_id(db_conn, product_id: int):

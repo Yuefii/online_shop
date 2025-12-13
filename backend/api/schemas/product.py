@@ -21,3 +21,12 @@ class ProductResponse(ProductBase):
 
     class Config:
         from_attributes = True
+
+from typing import List
+
+class PaginatedProductResponse(BaseModel):
+    items: List[ProductResponse]
+    total: int
+    page: int
+    size: int
+    pages: int

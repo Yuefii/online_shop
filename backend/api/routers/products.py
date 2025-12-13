@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import List
-from api.schemas.product import ProductCreate, ProductResponse
-from api.db.products import get_all_products, get_product_by_id, create_product, update_product, delete_product
+from api.schemas.product import ProductCreate, ProductResponse, PaginatedProductResponse
+from api.db.products import get_all_products, get_product_by_id, create_product, update_product, delete_product, count_products
 from api.db.conn import get_db
 from api.core.limiter import limiter
 
@@ -17,6 +17,32 @@ def list_products(
     category_id: int = None
 ):
     return get_all_products(db, search_query=q, min_price=min_price, max_price=max_price, category_id=category_id)
+
+@router.get("/paginated", response_model=PaginatedProductResponse)
+def list_products_paginated(
+    request: Request, 
+    db=Depends(get_db),
+    q: str = None,
+    min_price: float = None,
+    max_price: float = None,
+    category_id: int = None,
+    page: int = 1,
+    size: int = 10
+):
+    offset = (page - 1) * size
+    items = get_all_products(db, search_query=q, min_price=min_price, max_price=max_price, category_id=category_id, limit=size, offset=offset)
+    total = count_products(db, search_query=q, min_price=min_price, max_price=max_price, category_id=category_id)
+    
+    import math
+    pages = math.ceil(total / size) if size > 0 else 0
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": pages
+    }
 
 from api.dependencies import get_current_admin_user
 
