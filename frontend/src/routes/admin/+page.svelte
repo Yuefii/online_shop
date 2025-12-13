@@ -4,7 +4,6 @@
     import { DollarSign, ShoppingCart, Package, Users, TrendingUp } from 'lucide-svelte';
     import StatCard from './components/StatCard.svelte';
     import SalesChart from './components/SalesChart.svelte';
-    import RecentOrders from './components/RecentOrders.svelte';
 
     interface Order {
         id: number;
@@ -140,13 +139,8 @@
 		</div>
 
 		<!-- Charts & Recent Orders -->
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<div class="lg:col-span-2">
-				<SalesChart labels={salesData.labels} data={salesData.data} />
-			</div>
-			<div class="lg:col-span-1">
-				<RecentOrders {orders} />
-			</div>
+		<div>
+			<SalesChart labels={salesData.labels} data={salesData.data} />
 		</div>
 	{/if}
 </div>

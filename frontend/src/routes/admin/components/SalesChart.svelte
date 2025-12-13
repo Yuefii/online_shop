@@ -114,7 +114,7 @@
   });
 </script>
 
-<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-96">
+<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-auto">
 	<div class="flex items-center justify-between mb-4">
 		<h3 class="text-lg font-bold text-gray-900">Sales Overview</h3>
 		<select
