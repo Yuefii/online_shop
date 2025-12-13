@@ -20,9 +20,9 @@ interface AuthState {
 
 const initialState: AuthState = {
 	user: null,
-	token: browser ? localStorage.getItem('access_token') : null,
-	isAuthenticated: browser ? !!localStorage.getItem('access_token') : false,
-	loading: false
+	token: null, // Token is now in cookie, this field is less relevant but keeping for type compat or just null
+	isAuthenticated: false,
+	loading: true // Start loading to check auth status on mount
 };
 
 function createAuthStore() {
@@ -37,7 +37,7 @@ function createAuthStore() {
 				formData.append('username', email);
 				formData.append('password', password);
 
-				const res = await request('/auth/login', {
+				await request('/auth/login', {
 					method: 'POST',
 					body: formData,
 					headers: {
@@ -45,14 +45,8 @@ function createAuthStore() {
 					}
 				});
 
-				const { access_token } = res;
-				
-				if (browser) {
-					localStorage.setItem('access_token', access_token);
-				}
-
-				update((s) => ({ ...s, token: access_token, isAuthenticated: true }));
-				
+                // No need to store token manually. Cookie is set.
+                // Just fetch profile to confirm and get user data.
                 await auth.fetchProfile();
                 
                 await goto('/profile');
@@ -79,27 +73,29 @@ function createAuthStore() {
 			}
 		},
 		fetchProfile: async () => {
-            const token = browser ? localStorage.getItem('access_token') : null;
-            if (!token) return;
-
 			update((s) => ({ ...s, loading: true }));
 			try {
+                // This request will send the cookie automatically
 				const user = await request('/users/me');
-				update((s) => ({ ...s, user }));
+				update((s) => ({ ...s, user, isAuthenticated: true }));
 			} catch (error: any) {
-                if (error.status === 401) {
-                    auth.logout();
+                // If 401, we are just not logged in.
+                if (error.status !== 401) {
+				    console.error('Fetch profile failed', error);
                 }
-				console.error('Fetch profile failed', error);
+                update((s) => ({ ...s, user: null, isAuthenticated: false }));
 			} finally {
 				update((s) => ({ ...s, loading: false }));
 			}
 		},
-		logout: () => {
-			if (browser) {
-				localStorage.removeItem('access_token');
-			}
-			set({ ...initialState, token: null, isAuthenticated: false });
+		logout: async () => {
+            try {
+                await request('/auth/logout', { method: 'POST' });
+            } catch (err) {
+                console.error("Logout failed", err);
+            }
+            // Clear local state regardless of server response
+			set({ ...initialState, loading: false, isAuthenticated: false });
 			goto('/auth/login');
 		}
 	};

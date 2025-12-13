@@ -7,10 +7,8 @@
 	let { children } = $props();
 
     onMount(() => {
-        const state = get(auth);
-        if (state.isAuthenticated) {
-            auth.fetchProfile();
-        }
+        // Always try to fetch profile on mount to check cookie session
+        auth.fetchProfile();
     });
 </script>
 

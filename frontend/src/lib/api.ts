@@ -12,11 +12,6 @@ export async function request(endpoint: string, options: RequestOptions = {}) {
 
 	if (options.token) {
 		headers.set('Authorization', `Bearer ${options.token}`);
-	} else if (browser) {
-		const token = localStorage.getItem('access_token');
-		if (token) {
-			headers.set('Authorization', `Bearer ${token}`);
-		}
 	}
 
 	if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
@@ -25,6 +20,7 @@ export async function request(endpoint: string, options: RequestOptions = {}) {
 
 	const response = await fetch(url, {
 		...options,
+        credentials: 'include', // Send cookies
 		headers
 	});
 

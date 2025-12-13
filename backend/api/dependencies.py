@@ -5,9 +5,25 @@ from api.core.config import SECRET_KEY, ALGORITHM
 from api.db.conn import get_db
 from api.db.repository import get_user_by_email
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+from fastapi import Request
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: tuple = Depends(get_db)):
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+def get_current_user(request: Request, token: str = Depends(oauth2_scheme), db: tuple = Depends(get_db)):
+    # Try getting token from cookie if not in header
+    if not token:
+        cookie_authorization = request.cookies.get("access_token")
+        if cookie_authorization:
+            # Clean up "Bearer " prefix if present in cookie (not typical but I set it that way in auth.py)
+            scheme, _, param = cookie_authorization.partition(" ")
+            if scheme.lower() == "bearer":
+                token = param
+            else:
+                token = cookie_authorization
+    
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
