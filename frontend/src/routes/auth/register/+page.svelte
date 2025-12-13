@@ -33,11 +33,8 @@
 			<h2 class="mt-6 text-center text-3xl font-bold text-gray-900">Create account</h2>
 			<p class="mt-2 text-center text-sm text-gray-600">
 				Or
-				<a
-					href="/login"
-					class="font-medium text-gray-900 hover:text-gray-700 underline transition-colors"
-				>
-					sign in to existing account
+				<a href="/auth/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+					Sign in
 				</a>
 			</p>
 		</div>

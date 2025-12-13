@@ -59,6 +59,14 @@
 								>Profile</a
 							>
 
+							{#if $auth.user && $auth.user.role === 'admin'}
+								<a
+									href="/admin"
+									class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+									>Admin</a
+								>
+							{/if}
+
 							<!-- Cart Button -->
 							<button
 								class="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -189,6 +197,13 @@
 							class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
 							>Profile</a
 						>
+						{#if $auth.user && $auth.user.role === 'admin'}
+							<a
+								href="/admin"
+								class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium"
+								>Admin</a
+							>
+						{/if}
 						<button
 							onclick={() => auth.logout()}
 							class="text-gray-600 hover:text-red-600 hover:bg-red-50 block w-full text-left px-3 py-2 rounded-md text-base font-medium"

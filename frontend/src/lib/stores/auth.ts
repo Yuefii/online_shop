@@ -70,7 +70,7 @@ function createAuthStore() {
 					method: 'POST',
 					body: JSON.stringify({ email, password, full_name: fullName })
 				});
-                await goto('/login');
+                await goto('/auth/login');
 			} catch (error) {
 				console.error('Registration failed', error);
 				throw error;
@@ -100,7 +100,7 @@ function createAuthStore() {
 				localStorage.removeItem('access_token');
 			}
 			set({ ...initialState, token: null, isAuthenticated: false });
-			goto('/login');
+			goto('/auth/login');
 		}
 	};
 }
