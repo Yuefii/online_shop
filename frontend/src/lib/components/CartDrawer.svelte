@@ -12,8 +12,14 @@
 {#if isOpen}
 	<!-- Overlay -->
 	<div
-		class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+		class="fixed inset-0 bg-black opacity-50 backdrop-blur-sm z-40 transition-opacity"
+		role="button"
+		tabindex="0"
+		aria-label="Close cart"
 		on:click={close}
+		on:keydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') close();
+		}}
 		transition:fade
 	></div>
 
