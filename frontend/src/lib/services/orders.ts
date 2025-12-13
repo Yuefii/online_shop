@@ -42,3 +42,15 @@ export async function payOrder(id: number): Promise<Order> {
         method: 'POST'
     });
 }
+
+export async function receiveOrder(id: number): Promise<Order> {
+    return request(`/orders/${id}/receive`, {
+        method: 'POST'
+    });
+}
+
+export async function cancelOrder(id: number): Promise<Order> {
+    return request(`/orders/${id}/cancel`, {
+        method: 'POST'
+    });
+}

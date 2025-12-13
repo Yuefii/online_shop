@@ -1,12 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { listAllOrdersAdmin, updateOrderStatus, type Order } from '$lib/services/orders';
+  import { listAllOrdersAdmin, updateOrderStatus, cancelOrder, type Order } from '$lib/services/orders';
 
   let orders: Order[] = [];
   let loading = true;
   let error = '';
-  
-  const statuses = ['pending', 'processing', 'shipped', 'completed', 'cancelled'];
 
   onMount(async () => {
       await fetchOrders();
@@ -35,6 +33,23 @@
           await updateOrderStatus(order.id, newStatus);
       } catch (e: any) {
           alert('Failed to update status: ' + e.message);
+          order.status = originalStatus;
+          orders = [...orders];
+      }
+  }
+
+  async function handleCancel(order: Order) {
+      if (!confirm(`Are you sure you want to cancel Order #${order.id}?`)) return;
+      
+      const originalStatus = order.status;
+      try {
+          // Optimistic
+          order.status = 'cancelled';
+          orders = [...orders];
+          
+          await cancelOrder(order.id);
+      } catch (e: any) {
+          alert('Failed to cancel: ' + e.message);
           order.status = originalStatus;
           orders = [...orders];
       }
@@ -119,23 +134,41 @@
 										? 'bg-green-100 text-green-800'
 										: order.status === 'pending'
 											? 'bg-yellow-100 text-yellow-800'
-											: order.status === 'cancelled'
-												? 'bg-red-100 text-red-800'
-												: 'bg-gray-100 text-gray-800'}"
+											: order.status === 'processing'
+												? 'bg-blue-100 text-blue-800'
+												: order.status === 'shipped'
+													? 'bg-indigo-100 text-indigo-800'
+													: order.status === 'cancelled'
+														? 'bg-red-100 text-red-800'
+														: 'bg-gray-100 text-gray-800'}"
 								>
 									{order.status}
 								</span>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-								<select
-									class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-									value={order.status}
-									on:change={(e) => handleStatusChange(order, e.currentTarget.value)}
-								>
-									{#each statuses as status}
-										<option value={status}>{status}</option>
-									{/each}
-								</select>
+								{#if order.status === 'processing'}
+									<button
+										class="text-indigo-600 hover:text-indigo-900 font-medium mr-2"
+										on:click={() => handleStatusChange(order, 'shipped')}
+									>
+										Ship Order
+									</button>
+									<button
+										class="text-red-600 hover:text-red-900 font-medium"
+										on:click={() => handleCancel(order)}
+									>
+										Cancel
+									</button>
+								{:else if order.status === 'pending'}
+									<button
+										class="text-red-600 hover:text-red-900 font-medium"
+										on:click={() => handleCancel(order)}
+									>
+										Cancel
+									</button>
+								{:else}
+									<span class="text-gray-400">-</span>
+								{/if}
 							</td>
 						</tr>
 					{/each}

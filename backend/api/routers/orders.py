@@ -83,3 +83,47 @@ def pay_order(order_id: int, current_user: dict = Depends(get_current_user), db=
     # 3. Simulate payment success -> update status
     # In real world, here we would verify with Stripe/Midtrans
     return orders_db.update_order_status(db, order_id, 'processing')
+
+@router.post("/{order_id}/receive", response_model=OrderResponse)
+def receive_order(order_id: int, current_user: dict = Depends(get_current_user), db=Depends(get_db)):
+    # 1. Get order check ownership
+    order = orders_db.get_order_by_id(db, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order['user_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # 2. Check status
+    if order['status'] != 'shipped':
+        raise HTTPException(status_code=400, detail="Order must be shipped before it can be received")
+        
+    # 3. Update status to completed
+    return orders_db.update_order_status(db, order_id, 'completed')
+
+@router.post("/{order_id}/cancel", response_model=OrderResponse)
+def cancel_order(order_id: int, current_user: dict = Depends(get_current_user), db=Depends(get_db)):
+    # 1. Get order
+    order = orders_db.get_order_by_id(db, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    is_admin = current_user.get('role') == 'admin'
+    is_owner = order['user_id'] == current_user['id']
+    
+    if not is_admin and not is_owner:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # 2. Check status based on role
+    allowed = False
+    if is_admin:
+        if order['status'] in ['pending', 'processing']:
+            allowed = True
+    elif is_owner:
+        if order['status'] == 'pending':
+            allowed = True
+            
+    if not allowed:
+        raise HTTPException(status_code=400, detail=f"Cannot cancel order in status '{order['status']}'")
+        
+    # 3. Update status to cancelled
+    return orders_db.update_order_status(db, order_id, 'cancelled')
