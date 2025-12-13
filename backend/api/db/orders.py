@@ -68,9 +68,25 @@ def get_order_items(db_conn, order_id: int):
     cursor.execute(query, (order_id,))
     return cursor.fetchall()
 
-def get_all_orders(db_conn):
+def get_all_orders(db_conn, search_query: str = None):
     db, cursor = db_conn
-    cursor.execute("SELECT * FROM orders ORDER BY created_at DESC")
+    
+    if search_query:
+        # Check if query is a number (for ID search)
+        if search_query.isdigit():
+            # Search by ID or Status
+             cursor.execute(
+                "SELECT * FROM orders WHERE id = %s OR status LIKE %s ORDER BY created_at DESC", 
+                (int(search_query), f"%{search_query}%")
+            )
+        else:
+             cursor.execute(
+                "SELECT * FROM orders WHERE status LIKE %s ORDER BY created_at DESC", 
+                (f"%{search_query}%",)
+            )
+    else:
+        cursor.execute("SELECT * FROM orders ORDER BY created_at DESC")
+    
     orders = cursor.fetchall()
     # Populate items? For admin listing usually summary is enough, but user might expand. 
     # Let's keep it consistent.

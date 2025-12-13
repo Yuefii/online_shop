@@ -1,9 +1,17 @@
 <script lang="ts">
 	import { Bell, Search, User } from 'lucide-svelte';
 	import { auth } from '$lib/stores/auth';
+    import { goto } from '$app/navigation';
 
 	let { title = 'Dashboard' } = $props();
 	let user = $derived($auth.user);
+    
+    let searchQuery = $state('');
+
+    function handleSearch() {
+        if (!searchQuery.trim()) return;
+        goto(`/admin/search?q=${encodeURIComponent(searchQuery)}`);
+    }
 </script>
 
 <header
@@ -14,13 +22,15 @@
 	</div>
 
 	<div class="flex items-center gap-6">
-		<!-- Search (Optional placeholder) -->
+		<!-- Search -->
 		<div class="relative hidden md:block">
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
 			<input
 				type="text"
-				placeholder="Search..."
-				class="pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64"
+				placeholder="Search (Products, Orders, Users)..."
+				bind:value={searchQuery}
+				onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+				class="pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-80 transition-all"
 			/>
 		</div>
 

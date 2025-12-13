@@ -21,9 +21,13 @@ class UserRoleUpdate(BaseModel):
     role: str
 
 @router.get("/", response_model=List[dict])
-def list_users(admin: dict = Depends(get_current_admin_user), db=Depends(get_db)):
+def list_users(
+    q: str = None,
+    admin: dict = Depends(get_current_admin_user), 
+    db=Depends(get_db)
+):
     """List all users (Admin only)"""
-    return get_all_users(db)
+    return get_all_users(db, search_query=q)
 
 @router.put("/{user_id}/role")
 def change_user_role(

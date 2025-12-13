@@ -17,9 +17,16 @@ def create_user(db_conn, email: str, password: str, full_name: str = None):
     return cursor.lastrowid
 
 
-def get_all_users(db_conn):
+def get_all_users(db_conn, search_query: str = None):
     db, cursor = db_conn
-    cursor.execute("SELECT id, email, full_name, role, is_active, created_at FROM users")
+    if search_query:
+        search_param = f"%{search_query}%"
+        cursor.execute(
+            "SELECT id, email, full_name, role, is_active, created_at FROM users WHERE email LIKE %s OR full_name LIKE %s", 
+            (search_param, search_param)
+        )
+    else:
+        cursor.execute("SELECT id, email, full_name, role, is_active, created_at FROM users")
     return cursor.fetchall()
 
 

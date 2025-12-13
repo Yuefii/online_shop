@@ -41,8 +41,12 @@ class OrderStatusUpdate(BaseModel):
     status: str
 
 @router.get("/admin/all", response_model=List[OrderResponse])
-def list_all_orders(admin: dict = Depends(get_current_admin_user), db=Depends(get_db)):
-    return orders_db.get_all_orders(db)
+def list_all_orders(
+    q: str = None,
+    admin: dict = Depends(get_current_admin_user), 
+    db=Depends(get_db)
+):
+    return orders_db.get_all_orders(db, search_query=q)
 
 @router.put("/{order_id}/status", response_model=OrderResponse)
 def update_order_status(
