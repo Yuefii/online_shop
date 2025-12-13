@@ -17,6 +17,7 @@ class ProductCreate(ProductBase):
 class ProductResponse(ProductBase):
     id: int
     created_at: datetime | None = None
+    category_name: Optional[str] = None
 
     class Config:
         from_attributes = True

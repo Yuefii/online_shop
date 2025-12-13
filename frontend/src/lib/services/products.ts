@@ -8,6 +8,7 @@ export interface Product {
     image_url?: string;
     stock: number;
     category_id: number;
+    category_name?: string;
     created_at?: string;
 }
 
@@ -46,4 +47,17 @@ export async function createProduct(data: ProductCreate): Promise<Product> {
 
 export async function getProduct(id: number): Promise<Product> {
     return request(`/products/${id}`);
+}
+
+export async function updateProduct(id: number, data: ProductCreate): Promise<Product> {
+    return request(`/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+    return request(`/products/${id}`, {
+        method: 'DELETE'
+    });
 }

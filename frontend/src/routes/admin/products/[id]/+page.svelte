@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { createProduct } from '$lib/services/products';
+  import { updateProduct, getProduct, type Product } from '$lib/services/products';
   import { getCategories, type Category } from '$lib/services/categories';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
 
   let name = '';
   let description = '';
@@ -15,16 +16,35 @@
   let loadingContent = true;
   let error = '';
   let submitting = false;
+  let productId: number;
 
   onMount(async () => {
+    productId = Number($page.params.id);
+    if (!productId) {
+        error = "Invalid product ID";
+        loadingContent = false;
+        return;
+    }
+
     try {
-      categories = await getCategories();
-      if (categories.length > 0) {
-        // default to first category
-        category_id = categories[0].id;
+      const [fetchedCategories, product] = await Promise.all([
+        getCategories(),
+        getProduct(productId)
+      ]);
+      
+      categories = fetchedCategories;
+      
+      if (product) {
+        name = product.name;
+        description = product.description || '';
+        price = product.price;
+        stock = product.stock;
+        category_id = product.category_id;
+        image_url = product.image_url || '';
       }
+      
     } catch (e: any) {
-        error = "Failed to load categories: " + (e.message || 'Unknown error');
+        error = "Failed to load data: " + (e.message || 'Unknown error');
     } finally {
         loadingContent = false;
     }
@@ -39,7 +59,7 @@
     submitting = true;
     error = '';
     try {
-      await createProduct({ 
+      await updateProduct(productId, { 
         name, 
         description, 
         price, 
@@ -49,7 +69,7 @@
       });
       goto('/admin/products');
     } catch (e: any) {
-      error = e.message || 'Failed to create product';
+      error = e.message || 'Failed to update product';
     } finally {
       submitting = false;
     }
@@ -63,7 +83,7 @@
 			class="text-indigo-600 hover:text-indigo-800 mb-4 inline-block text-sm font-medium"
 			>&larr; Back to Products</a
 		>
-		<h1 class="text-2xl font-bold text-gray-900">Create Product</h1>
+		<h1 class="text-2xl font-bold text-gray-900">Edit Product</h1>
 	</div>
 
 	{#if error}
@@ -77,7 +97,7 @@
 	{/if}
 
 	{#if loadingContent}
-		<div class="py-10 text-center text-gray-500">Loading form dependencies...</div>
+		<div class="py-10 text-center text-gray-500">Loading product data...</div>
 	{:else}
 		<form
 			on:submit|preventDefault={handleSubmit}
@@ -168,9 +188,9 @@
 					class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
 				>
 					{#if submitting}
-						Creating...
+						Saving...
 					{:else}
-						Create Product
+						Save Changes
 					{/if}
 				</button>
 			</div>

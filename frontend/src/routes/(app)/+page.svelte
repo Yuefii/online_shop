@@ -212,14 +212,6 @@
 				<div
 					class="glass-panel rounded-lg p-6 hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer hover:-translate-y-1 bg-white border border-gray-100"
 				>
-					<div class="flex justify-between items-start mb-4">
-						<h2
-							class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors"
-						>
-							{product.name}
-						</h2>
-					</div>
-
 					{#if product.image_url}
 						<div
 							class="aspect-w-16 aspect-h-9 mb-4 overflow-hidden rounded-md bg-gray-100 border border-gray-200"
@@ -227,16 +219,24 @@
 							<img
 								src={product.image_url}
 								alt={product.name}
-								class="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-500"
+								class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-500"
 							/>
 						</div>
 					{:else}
 						<div
-							class="w-full h-48 bg-gray-100 rounded-md mb-4 flex items-center justify-center text-gray-400 border border-gray-200"
+							class="w-full h-64 bg-gray-100 rounded-md mb-4 flex items-center justify-center text-gray-400 border border-gray-200"
 						>
 							<span>No Image</span>
 						</div>
 					{/if}
+
+					<div class="flex justify-between items-start mb-4">
+						<h2
+							class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors truncate"
+						>
+							{product.name}
+						</h2>
+					</div>
 
 					<p class="text-gray-500 text-sm mb-4 flex-grow line-clamp-2">
 						{product.description || 'No description'}
