@@ -71,6 +71,34 @@
   function addToCart(product: Product) {
       cart.addToCart(product);
   }
+
+  // Category Scrolling Logic
+  let categoryScrollContainer: HTMLElement;
+  let showLeftArrow = false;
+  let showRightArrow = true;
+  let showAllCategories = false;
+
+  function checkScroll() {
+      if (!categoryScrollContainer) return;
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollContainer;
+      showLeftArrow = scrollLeft > 10;
+      showRightArrow = scrollLeft < scrollWidth - clientWidth - 10;
+  }
+
+  function scrollCategories(direction: 'left' | 'right') {
+      if (!categoryScrollContainer) return;
+      const scrollAmount = 300;
+      categoryScrollContainer.scrollBy({
+          left: direction === 'left' ? -scrollAmount : scrollAmount,
+          behavior: 'smooth'
+      });
+  }
+
+  onMount(() => {
+      checkScroll();
+      window.addEventListener('resize', checkScroll);
+      return () => window.removeEventListener('resize', checkScroll);
+  });
 </script>
 
 <div class="space-y-8">
@@ -164,12 +192,69 @@
 		{/if}
 
 		<!-- Category Pills (Horizontal Scroll) -->
-		<div class="flex justify-center">
+
+		<!-- Category Navigation -->
+		<div class="relative max-w-full">
+			{#if !showAllCategories}
+				<!-- Scroll Shadows/Gradients -->
+				{#if showLeftArrow}
+					<div
+						class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"
+					></div>
+					<button
+						class="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white shadow-md rounded-full p-2 text-gray-600 hover:text-gray-900 focus:outline-none hidden md:block"
+						on:click={() => scrollCategories('left')}
+						aria-label="Scroll left"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-5 w-5"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+				{/if}
+
+				{#if showRightArrow}
+					<div
+						class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"
+					></div>
+					<button
+						class="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white shadow-md rounded-full p-2 text-gray-600 hover:text-gray-900 focus:outline-none hidden md:block"
+						on:click={() => scrollCategories('right')}
+						aria-label="Scroll right"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-5 w-5"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+				{/if}
+			{/if}
+
 			<div
-				class="inline-flex rounded-xl bg-white p-1 shadow-sm border border-gray-100 overflow-x-auto max-w-full"
+				bind:this={categoryScrollContainer}
+				class="flex flex-wrap justify-center gap-2 p-1 {showAllCategories
+					? ''
+					: 'overflow-x-auto flex-nowrap md:px-10 scrollbar-hide snap-x'}"
+				on:scroll={checkScroll}
 			>
 				<button
-					class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap {selectedCategoryId ===
+					class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap snap-center {selectedCategoryId ===
 					null
 						? 'bg-gray-900 text-white shadow-md'
 						: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}"
@@ -179,7 +264,7 @@
 				</button>
 				{#each categories as category}
 					<button
-						class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap {selectedCategoryId ===
+						class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap snap-center {selectedCategoryId ===
 						category.id
 							? 'bg-gray-900 text-white shadow-md'
 							: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}"
@@ -189,6 +274,30 @@
 					</button>
 				{/each}
 			</div>
+
+			<!-- View All Toggle -->
+			{#if categories.length > 5}
+				<div class="flex justify-center mt-2">
+					<button
+						on:click={() => (showAllCategories = !showAllCategories)}
+						class="text-xs font-medium text-gray-500 hover:text-indigo-600 flex items-center gap-1 transition-colors"
+					>
+						{showAllCategories ? 'Show Less' : 'View All Categories'}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-4 w-4 transform transition-transform {showAllCategories ? 'rotate-180' : ''}"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+				</div>
+			{/if}
 		</div>
 	</div>
 
