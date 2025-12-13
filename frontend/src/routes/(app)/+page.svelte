@@ -318,7 +318,8 @@
 	{:else}
 		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
 			{#each products as product (product.id)}
-				<div
+				<a
+					href="/products/{product.id}"
 					class="glass-panel rounded-lg p-4 hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer hover:-translate-y-1 bg-white border border-gray-100"
 				>
 					{#if product.image_url}
@@ -355,12 +356,12 @@
 						<span class="text-gray-900 font-bold text-lg">${product.price}</span>
 						<button
 							class="btn-primary w-full py-2 rounded-md text-xs font-medium bg-black text-white hover:bg-gray-800 transition-colors"
-							on:click={() => addToCart(product)}
+							on:click|preventDefault={() => addToCart(product)}
 						>
 							Add to Cart
 						</button>
 					</div>
-				</div>
+				</a>
 			{/each}
 		</div>
 		{#if products.length === 0}

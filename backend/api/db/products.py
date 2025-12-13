@@ -65,7 +65,12 @@ def count_products(db_conn, search_query: str = None, min_price: float = None, m
 
 def get_product_by_id(db_conn, product_id: int):
     db, cursor = db_conn
-    cursor.execute("SELECT * FROM products WHERE id=%s", (product_id,))
+    cursor.execute("""
+        SELECT p.*, c.name as category_name 
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.id=%s
+    """, (product_id,))
     return cursor.fetchone()
 
 
