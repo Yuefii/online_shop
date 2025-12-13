@@ -117,6 +117,7 @@
 									type="button"
 									class="p-2 transition-transform hover:-translate-y-1 focus:outline-none"
 									on:click={() => (rating = star)}
+									aria-label="Rate {star} of 5 stars"
 								>
 									<svg
 										class="w-8 h-8 {rating >= star
