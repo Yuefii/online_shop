@@ -48,6 +48,13 @@ def list_all_orders(
 ):
     return orders_db.get_all_orders(db, search_query=q)
 
+@router.get("/admin/stats")
+def get_stats(
+    admin: dict = Depends(get_current_admin_user),
+    db=Depends(get_db)
+):
+    return orders_db.get_order_stats(db)
+
 @router.put("/{order_id}/status", response_model=OrderResponse)
 def update_order_status(
     order_id: int, 

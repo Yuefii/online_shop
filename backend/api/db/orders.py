@@ -104,3 +104,9 @@ def update_order_status(db_conn, order_id: int, status: str):
         return None
     return get_order_by_id(db_conn, order_id)
 
+
+def get_order_stats(db_conn):
+    db, cursor = db_conn
+    cursor.execute("SELECT COUNT(*) as count FROM orders WHERE status IN ('pending', 'processing')")
+    result = cursor.fetchone()
+    return {"pending_count": result['count'] if result else 0}

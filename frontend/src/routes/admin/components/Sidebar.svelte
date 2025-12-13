@@ -9,8 +9,12 @@
 		LogOut,
 		Store
 	} from 'lucide-svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { request } from '$lib/api';
 
 	let currentPath = $derived($page.url.pathname);
+	let pendingCount = $state(0);
+	let pollInterval: ReturnType<typeof setInterval>;
 
 	const links = [
 		{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,9 +23,35 @@
 		{ href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
 		{ href: '/admin/users', label: 'Users', icon: Users }
 	];
+
+	async function fetchStats() {
+		try {
+			// Only fetch if authenticated and user is admin
+			// If we are in the admin layout, we generally are admin, but safe check:
+            // Actually, admin check handled by layout protection
+			const data = await request('/orders/admin/stats', { method: 'GET' });
+			if (data) {
+				pendingCount = data.pending_count;
+			}
+		} catch (e) {
+			console.error("Failed to fetch pending orders stats", e);
+		}
+	}
+
+	onMount(() => {
+		fetchStats();
+		// Poll every 10 seconds
+		pollInterval = setInterval(fetchStats, 10000);
+	});
+
+	onDestroy(() => {
+		if (pollInterval) clearInterval(pollInterval);
+	});
 </script>
 
-<aside class="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col fixed inset-y-0 left-0 z-20 shadow-sm transition-all duration-300">
+<aside
+	class="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col fixed inset-y-0 left-0 z-20 shadow-sm transition-all duration-300"
+>
 	<!-- Logo/Brand -->
 	<div class="h-16 flex items-center px-6 border-b border-gray-100">
 		<div class="flex items-center gap-2 text-indigo-600">
@@ -32,21 +62,29 @@
 
 	<!-- Navigation -->
 	<nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-		<div class="mb-4 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-			Menu
-		</div>
-		
+		<div class="mb-4 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu</div>
+
 		{#each links as link}
 			{@const isActive = currentPath === link.href}
+			{@const isOrders = link.label === 'Orders'}
+
 			<a
 				href={link.href}
-				class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200
-				{isActive 
-					? 'bg-indigo-50 text-indigo-700' 
-					: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
+				class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 relative
+				{isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
 			>
-				<link.icon size={20} class="mr-3 {isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'}" />
+				<link.icon
+					size={20}
+					class="mr-3 {isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'}"
+				/>
 				{link.label}
+				{#if isOrders && pendingCount > 0}
+					<span
+						class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center"
+					>
+						{pendingCount}
+					</span>
+				{/if}
 			</a>
 		{/each}
 	</nav>
