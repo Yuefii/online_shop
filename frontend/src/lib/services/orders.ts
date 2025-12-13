@@ -54,3 +54,29 @@ export async function cancelOrder(id: number): Promise<Order> {
         method: 'POST'
     });
 }
+
+export interface Review {
+    id: number;
+    user_id: number;
+    product_id: number;
+    rating: number;
+    comment: string;
+    created_at: string;
+    user_name: string;
+}
+
+export async function submitReview(orderId: number, productId: number, rating: number, comment: string): Promise<Review> {
+    return request('/reviews/', {
+        method: 'POST',
+        body: JSON.stringify({
+            order_id: orderId,
+            product_id: productId,
+            rating,
+            comment
+        })
+    });
+}
+
+export async function getProductReviews(productId: number): Promise<Review[]> {
+    return request(`/reviews/product/${productId}`);
+}

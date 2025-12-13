@@ -4,7 +4,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from api.core.limiter import limiter
-from api.routers import auth, user, categories, products, cart, orders
+from api.routers import auth, user, categories, products, cart, orders, reviews
 
 
 api = FastAPI()
@@ -46,3 +46,4 @@ api.include_router(categories.router, prefix="/categories", tags=["Categories"])
 api.include_router(products.router, prefix="/products", tags=["Products"])
 api.include_router(cart.router, prefix="/cart", tags=["Cart"])
 api.include_router(orders.router, prefix="/orders", tags=["Orders"])
+api.include_router(reviews.router, prefix="/reviews", tags=["Reviews"])

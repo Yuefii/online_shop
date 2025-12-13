@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { getOrder, payOrder, receiveOrder, cancelOrder, type Order } from '$lib/services/orders';
+  import { getOrder, payOrder, receiveOrder, cancelOrder, type Order, type OrderItem } from '$lib/services/orders';
 
   let order: Order | null = null;
   let loading = true;
@@ -161,14 +161,32 @@
 			<ul role="list" class="divide-y divide-gray-200">
 				{#each order.items as item}
 					<li class="px-4 py-4 sm:px-6 flex justify-between items-center">
-						<div>
+						<div class="min-w-0 flex-1 mr-4">
 							<p class="text-sm font-medium text-indigo-600 truncate">
 								{item.product_name || 'Product ' + item.product_id}
 							</p>
 							<p class="text-sm text-gray-500">Qty: {item.quantity}</p>
 						</div>
-						<div class="text-sm font-bold text-gray-900">
-							${item.price_at_purchase * item.quantity}
+						<div class="text-sm font-bold text-gray-900 flex flex-col items-end">
+							<span>${item.price_at_purchase * item.quantity}</span>
+							{#if order.status === 'completed'}
+								<a
+									href="/orders/{order.id}/review/{item.product_id}"
+									class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-100"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-3.5 w-3.5"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+										/>
+									</svg>
+									Rate Product
+								</a>
+							{/if}
 						</div>
 					</li>
 				{/each}

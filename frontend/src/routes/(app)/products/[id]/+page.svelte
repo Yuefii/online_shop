@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { getProduct, type Product } from '$lib/services/products';
+  import { getProductReviews, type Review } from '$lib/services/orders';
   import { cart } from '$lib/stores/cart';
 
   let loading = true;
@@ -9,9 +10,16 @@
   let product: Product | null = null;
   const productId = Number($page.params.id);
 
+  let reviews: Review[] = [];
+  
   onMount(async () => {
     try {
-      product = await getProduct(productId);
+      const [productData, reviewsData] = await Promise.all([
+          getProduct(productId),
+          getProductReviews(productId)
+      ]);
+      product = productData;
+      reviews = reviewsData;
     } catch (e: any) {
       error = e.message || 'Failed to load product';
     } finally {
@@ -123,6 +131,33 @@
 							&larr; Continue Shopping
 						</a>
 					</div>
+				</div>
+
+				<!-- Reviews Section -->
+				<div class="mt-16 border-t border-gray-200 pt-10">
+					<h3 class="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h3>
+					{#if reviews.length === 0}
+						<p class="text-gray-500 italic">No reviews yet. Be the first to review this product!</p>
+					{:else}
+						<div class="space-y-8">
+							{#each reviews as review}
+								<div class="border-b border-gray-100 pb-6">
+									<div class="flex items-center mb-2">
+										<div class="text-yellow-400 text-lg mr-2">
+											{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+										</div>
+										<span class="font-medium text-gray-900 mr-2"
+											>{review.user_name || 'Anonymous'}</span
+										>
+										<span class="text-sm text-gray-500"
+											>{new Date(review.created_at).toLocaleDateString()}</span
+										>
+									</div>
+									<p class="text-gray-600">{review.comment}</p>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
