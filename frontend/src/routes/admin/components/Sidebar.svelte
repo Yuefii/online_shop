@@ -10,12 +10,10 @@
 		Store
 	} from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
-	import { request } from '$lib/api';
+    import { notifications } from '$lib/stores/notifications';
 
 	let currentPath = $derived($page.url.pathname);
-	let pendingCount = $state(0);
-	let pollInterval: ReturnType<typeof setInterval>;
-
+    
 	const links = [
 		{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
 		{ href: '/admin/products', label: 'Products', icon: Package },
@@ -23,30 +21,6 @@
 		{ href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
 		{ href: '/admin/users', label: 'Users', icon: Users }
 	];
-
-	async function fetchStats() {
-		try {
-			// Only fetch if authenticated and user is admin
-			// If we are in the admin layout, we generally are admin, but safe check:
-            // Actually, admin check handled by layout protection
-			const data = await request('/orders/admin/stats', { method: 'GET' });
-			if (data) {
-				pendingCount = data.pending_count;
-			}
-		} catch (e) {
-			console.error("Failed to fetch pending orders stats", e);
-		}
-	}
-
-	onMount(() => {
-		fetchStats();
-		// Poll every 10 seconds
-		pollInterval = setInterval(fetchStats, 10000);
-	});
-
-	onDestroy(() => {
-		if (pollInterval) clearInterval(pollInterval);
-	});
 </script>
 
 <aside
@@ -78,11 +52,11 @@
 					class="mr-3 {isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'}"
 				/>
 				{link.label}
-				{#if isOrders && pendingCount > 0}
+				{#if isOrders && $notifications.count > 0}
 					<span
 						class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center"
 					>
-						{pendingCount}
+						{$notifications.count}
 					</span>
 				{/if}
 			</a>

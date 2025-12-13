@@ -2,13 +2,17 @@
   import '../layout.css';
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import Sidebar from './components/Sidebar.svelte';
   import Header from './components/Header.svelte';
+  import { notifications } from '$lib/stores/notifications';
   
   let { children } = $props();
 
   onMount(() => {
+    // Start polling for notifications
+    notifications.startPolling();
+
 	const unsubscribe = auth.subscribe(state => {
 		if (state.loading) return;
 
@@ -29,7 +33,10 @@
 			goto('/');
 		}
 	});
-	return unsubscribe;
+	return () => {
+        unsubscribe();
+        notifications.stopPolling();
+    };
   });
 </script>
 

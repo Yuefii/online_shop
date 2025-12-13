@@ -2,6 +2,7 @@
 	import { Bell, Search, User } from 'lucide-svelte';
 	import { auth } from '$lib/stores/auth';
     import { goto } from '$app/navigation';
+    import { notifications } from '$lib/stores/notifications';
 
 	let { title = 'Dashboard' } = $props();
 	let user = $derived($auth.user);
@@ -36,10 +37,17 @@
 
 		<!-- Actions -->
 		<div class="flex items-center gap-3">
-			<button class="p-2 rounded-full hover:bg-gray-100 text-gray-500 relative">
+			<button
+				class="p-2 rounded-full hover:bg-gray-100 text-gray-500 relative cursor-pointer"
+				onclick={() => goto('/admin/orders')}
+				aria-label="View Orders"
+			>
 				<Bell size={20} />
-				<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"
-				></span>
+				{#if $notifications.count > 0}
+					<span
+						class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"
+					></span>
+				{/if}
 			</button>
 
 			<div class="pl-4 border-l border-gray-200 flex items-center gap-3">
