@@ -3,6 +3,8 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import Sidebar from './components/Sidebar.svelte';
+  import Header from './components/Header.svelte';
   
   let { children } = $props();
 
@@ -31,72 +33,17 @@
   });
 </script>
 
-<div class="min-h-screen bg-gray-100 flex font-sans text-gray-800">
+<div class="min-h-screen bg-gray-50 font-sans text-gray-800 flex">
 	<!-- Sidebar -->
-	<aside
-		class="w-64 bg-white border-r border-gray-200 min-h-screen fixed inset-y-0 left-0 z-10 flex flex-col shadow-sm"
-	>
-		<div class="p-6 border-b border-gray-100">
-			<h1 class="text-xl font-bold tracking-tight text-gray-900">Shop Admin</h1>
-		</div>
-		<nav class="flex-1 p-4 space-y-1">
-			<a
-				href="/admin"
-				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
-			>
-				Dashboard
-			</a>
+	<Sidebar />
 
-			<div class="pt-6 pb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-				Catalog
-			</div>
-			<a
-				href="/admin/products"
-				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
-			>
-				Products
-			</a>
-			<a
-				href="/admin/categories"
-				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
-			>
-				Categories
-			</a>
+	<!-- Main Content Wrapper -->
+	<div class="flex-1 flex flex-col pl-64 transition-all duration-300">
+		<!-- Header -->
+		<Header />
 
-			<div class="pt-6 pb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-				Sales
-			</div>
-			<a
-				href="/admin/orders"
-				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
-			>
-				Orders
-			</a>
-
-			<div class="pt-6 pb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-				System
-			</div>
-			<a
-				href="/admin/users"
-				class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-600 hover:text-gray-900 font-medium"
-			>
-				Users
-			</a>
-
-			<div class="pt-8 border-t border-gray-100 mt-4">
-				<a
-					href="/"
-					class="flex items-center px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700 text-sm font-medium"
-				>
-					&larr; Back to Shop Website
-				</a>
-			</div>
-		</nav>
-	</aside>
-
-	<!-- Main Content -->
-	<div class="flex-1 ml-64">
-		<main class="p-8 max-w-7xl mx-auto">
+		<!-- Page Content -->
+		<main class="p-8 flex-1 overflow-y-auto">
 			{@render children()}
 		</main>
 	</div>
