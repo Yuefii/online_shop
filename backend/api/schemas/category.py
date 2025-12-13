@@ -14,3 +14,12 @@ class CategoryResponse(CategoryBase):
 
     class Config:
         from_attributes = True
+
+from typing import List
+
+class PaginatedCategoryResponse(BaseModel):
+    items: List[CategoryResponse]
+    total: int
+    page: int
+    size: int
+    pages: int

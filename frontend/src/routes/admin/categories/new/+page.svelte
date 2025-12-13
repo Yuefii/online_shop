@@ -12,7 +12,7 @@
     error = '';
     try {
       await createCategory({ name, slug });
-      goto('/categories');
+      goto('/admin/categories');
     } catch (e: any) {
       error = e.message || 'Failed to create category';
     } finally {
